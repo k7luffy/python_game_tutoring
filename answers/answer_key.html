@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teacher Answer Key - Python Maze Adventure</title>
+<style>
+  :root {
+    --ink: #17203a;
+    --muted: #5a6684;
+    --line: #cfd6ea;
+    --gold: #a8730a;
+    --paper: #fbf8ef;
+    --panel: #ffffff;
+    --danger: #9b2335;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  header.warning {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--danger);
+    color: #fff;
+    text-align: center;
+    padding: 12px 18px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  main { max-width: 1060px; margin: 0 auto; padding: 36px 24px 80px; }
+  h1 { font-size: 2rem; line-height: 1.15; margin: 0 0 8px; }
+  h2 { font-size: 1.35rem; margin: 0; }
+  h3 { font-size: 1.05rem; margin: 26px 0 8px; color: var(--gold); }
+  .lede { color: var(--muted); margin: 0 0 24px; }
+  section {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin: 22px 0;
+    break-inside: avoid;
+  }
+  section.level { border-left: 8px solid var(--gold); }
+  .level-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+  .pill {
+    background: #fff4d6;
+    border: 1px solid #e2c26b;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-weight: 700;
+    color: #6d4a00;
+    white-space: nowrap;
+  }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 12px 0 4px; color: var(--muted); }
+  .objective { margin: 8px 0 16px; }
+  .note { background: #fff8e6; border-left: 5px solid var(--gold); padding: 10px 14px; margin: 14px 0 0; }
+  pre {
+    overflow-x: auto;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 12px 0 0;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  pre.code { background: #17203a; color: #e8eeff; }
+  pre.code.optional { background: #26305a; }
+  pre.map { background: #f1f3f9; color: #3a4666; border: 1px solid var(--line); line-height: 1.25; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .92rem; }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; }
+  th { background: #eef1f8; }
+  tbody tr:nth-child(even) { background: #f7f8fc; }
+  .rule { color: var(--muted); font-size: .95rem; }
+  @media print {
+    body { background: #fff; }
+    header.warning { position: static; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<header class="warning">Teacher answer key &mdash; do not project</header>
+<main>
+  <h1>Python Maze Adventure: The Coin Mission</h1>
+  <p class="lede">Teacher-only reference for the Create mission, the four maze levels and the boss.
+  Students start from an empty editor; share hints, not this page.</p>
+
+  <section class="overview" data-answer="overview">
+    <h2>Level economy at a glance</h2>
+    <p class="rule">Each move costs 1 coin. Gold coin +10, treasure chest +20.
+    A level passes when the base is reached with at least 0 coins. The final base tops the player up
+    to <strong>50 coins</strong> for the boss, and the boss practice run starts
+    with the same 50. Every boss move also costs 1 coin.</p>
+    <table>
+      <thead><tr><th>#</th><th>Level</th><th>Start</th><th>Shortest</th><th>Shortest result</th>
+      <th>Reference steps</th><th>Reference result</th></tr></thead>
+      <tbody><tr><td>1</td><td>First Steps</td><td>30</td><td>5</td><td>35</td><td>5</td><td>35</td></tr><tr><td>2</td><td>Two Paths</td><td>35</td><td>22</td><td>13</td><td>22</td><td>13</td></tr><tr><td>3</td><td>Save Your Coins</td><td>22</td><td>26</td><td>6</td><td>26</td><td>6</td></tr><tr><td>4</td><td>The Chest Detour</td><td>33</td><td>36</td><td>-3</td><td>40</td><td>13</td></tr></tbody>
+    </table>
+  </section>
+
+  <section data-answer="create">
+    <h2>Create Your Explorer</h2>
+    <p class="objective">Ask the player for a name with <code>input()</code>, store it in
+       <code>player_name</code>, then print a welcome that includes the name.</p>
+    <pre class="code"><code>player_name = input(&quot;What is your name? &quot;)
+print(&quot;Welcome,&quot;, player_name)</code></pre>
+    <p class="note">Sample run: the player types Nova &rarr; <code>player_name = "Nova"</code>
+       and the console shows the welcome. <code>weapon_power</code> is fixed at 5 by the game.</p>
+  </section>
+  <section class="level" data-route="1">
+    <div class="level-head">
+      <h2>Level 1: First Steps</h2>
+      <span class="pill">Start: 30 coins</span>
+    </div>
+    <div class="stats">
+      <span>Shortest route: <strong>5 steps</strong></span>
+      <span>Shortest result: <strong>35 coins</strong></span>
+      <span>Reference route: <strong>5 steps &rarr; 35 coins</strong></span>
+    </div>
+    <p class="objective">Reach the base five steps to the right. Every step costs 1 coin; the gold coin on the way pays +10.</p>
+    <pre class="map">###################
+#S.c..B############
+###################</pre>
+    <pre class="code"><code>for i in range(5):
+    move_one_step_right()</code></pre>
+    
+  </section>
+  <section class="level" data-route="2">
+    <div class="level-head">
+      <h2>Level 2: Two Paths</h2>
+      <span class="pill">Start: 35 coins</span>
+    </div>
+    <div class="stats">
+      <span>Shortest route: <strong>22 steps</strong></span>
+      <span>Shortest result: <strong>13 coins</strong></span>
+      <span>Reference route: <strong>22 steps &rarr; 13 coins</strong></span>
+    </div>
+    <p class="objective">More than one route reaches the base. The chest is optional, but it pays +20.</p>
+    <pre class="map">###################
+#S................#
+#....#####...####.#
+#....#...#...#....#
+#....#...#...#..C.#
+#....#...#...#....#
+#........#........#
+#........#.......B#
+###################</pre>
+    <pre class="code"><code>for i in range(16):
+    move_one_step_right()
+for i in range(6):
+    move_one_step_down()</code></pre>
+        <h3>Optional chest detour</h3>
+    <p>The direct route above skips the chest. A short detour collects it: <strong>24 steps &rarr; 31 coins</strong>.</p>
+    <pre class="code optional"><code>for i in range(16):
+    move_one_step_right()
+for i in range(3):
+    move_one_step_down()
+move_one_step_left()
+move_one_step_right()
+for i in range(3):
+    move_one_step_down()</code></pre>
+
+  </section>
+  <section class="level" data-route="3">
+    <div class="level-head">
+      <h2>Level 3: Save Your Coins</h2>
+      <span class="pill">Start: 22 coins</span>
+    </div>
+    <div class="stats">
+      <span>Shortest route: <strong>26 steps</strong></span>
+      <span>Shortest result: <strong>6 coins</strong></span>
+      <span>Reference route: <strong>26 steps &rarr; 6 coins</strong></span>
+    </div>
+    <p class="objective">The shortest route costs 26 coins, but you only start with 22. Find the gold coin on the route.</p>
+    <pre class="map">###################
+#S....#...........#
+#.....#.....#.....#
+#.....#.....#..c..#
+#.....#.....#.....#
+#.....#.....#.....#
+#.......c...#.....#
+#.....#.....#....B#
+#.....#.....#.....#
+#.....#...........#
+###################</pre>
+    <pre class="code"><code>for i in range(4):
+    move_one_step_right()
+for i in range(5):
+    move_one_step_down()
+for i in range(6):
+    move_one_step_right()
+for i in range(3):
+    move_one_step_down()
+for i in range(6):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_up()</code></pre>
+    
+  </section>
+  <section class="level" data-route="4">
+    <div class="level-head">
+      <h2>Level 4: The Chest Detour</h2>
+      <span class="pill">Start: 33 coins</span>
+    </div>
+    <div class="stats">
+      <span>Shortest route: <strong>36 steps</strong></span>
+      <span>Shortest result: <strong>-3 coins (fails)</strong></span>
+      <span>Reference route: <strong>40 steps &rarr; 13 coins</strong></span>
+    </div>
+    <p class="objective">The shortest route costs 36 coins and you have 33. The chest in the top-right dead end pays +20, but the detour is long.</p>
+    <pre class="map">###################
+#S....#.....#...#C#
+#.#.#.#.###.#.#.#.#
+#...#...#.#...#...#
+#########.#######.#
+#...#.#.......#...#
+#.#.#.#.###.###.###
+#.#...#...#.......#
+#.#######.#######.#
+#................B#
+###################</pre>
+    <pre class="code"><code>for i in range(4):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_down()
+for i in range(2):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_up()
+for i in range(4):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_down()
+for i in range(2):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_up()
+for i in range(2):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_down()
+for i in range(2):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_up()
+for i in range(4):
+    move_one_step_down()
+for i in range(2):
+    move_one_step_left()
+for i in range(2):
+    move_one_step_down()
+for i in range(2):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_down()</code></pre>
+    <p class="note">The base tops the checkpoint up to <strong>50 coins</strong> before the boss (level finish: 13, then +37 bonus).</p>
+  </section>
+
+  <section data-answer="boss">
+    <h2>Boss: Super Attack</h2>
+    <p class="objective">The boss starts at the top-left start tile with 50 coins
+       (checkpoint top-up) or 50 coins in a practice run. Students walk to the cyan
+       attack pad two tiles above the boss, then write a function that checks
+       <code>coins &gt;= 30</code> and fires only inside the <code>if</code> branch.
+       The boss tile itself is blocked, every move costs 1 coin, and the shortest walk to the pad is
+       <strong>20 steps</strong> - arriving with exactly
+       30 coins.</p>
+    <h3>Reference walk</h3>
+    <pre class="map">###################
+#S....#......######
+##.##.#.....#######
+#####.......#######
+#####.#####.......#
+#.....###.###....G#
+#...#####.###.....#
+#............####B#
+###################</pre>
+    <pre class="code"><code>for i in range(4):
+    move_one_step_right()
+for i in range(2):
+    move_one_step_down()
+for i in range(6):
+    move_one_step_right()
+move_one_step_down()
+for i in range(6):
+    move_one_step_right()
+move_one_step_down()</code></pre>
+    <h3>Full program</h3>
+    <pre class="code"><code>def super_attack():
+    if coins &gt;= 30:
+        print(&quot;Super Attack Activated!&quot;)
+        fire_super_attack()
+    else:
+        print(&quot;Not enough coins!&quot;)
+
+super_attack()</code></pre>
+    <p class="note">The route above is the reference walk; the second block is the full program.
+       The game refuses <code>fire_super_attack()</code> unless the robot stands on the pad and the call
+       sits inside an <code>if coins &gt;= 30:</code> check. If the function is never
+       called, the fire line is missing, or the guard is absent, the boss survives and the game shows a
+       hint on the notice card.</p>
+  </section>
+</main>
+</body>
+</html>

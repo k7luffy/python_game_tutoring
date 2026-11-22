@@ -1,0 +1,9 @@
+# Python Maze Adventure - game dependencies
+#
+# pygame-ce is the community edition of pygame.  It installs the same
+# `pygame` module name, is up to date with current Python versions and is
+# what this project is tested with.
+pygame-ce>=2.5,<3
+
+# Optional: only needed to run the automated tests.
+pytest>=8

@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Python Homework &mdash; The Coin Mission</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #ffffff; color: #111111; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9.6pt;
+    line-height: 1.36;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm; height: 297mm;
+    padding: 12mm 16mm 11mm;
+    position: relative;
+    page-break-after: always;
+    overflow: hidden;
+  }
+  .page:last-of-type { page-break-after: auto; }
+  .footer {
+    position: absolute; left: 16mm; right: 16mm; bottom: 5.5mm;
+    border-top: 0.4pt solid #999999;
+    padding-top: 1.2mm;
+    font-size: 8pt; color: #333333;
+  }
+  .footer .right { float: right; }
+
+  .kicker { font-size: 8pt; letter-spacing: 1.3pt; text-transform: uppercase; }
+  h1 { font-size: 18pt; margin: 1mm 0 1.6mm; letter-spacing: 0.1pt; }
+  .intro { margin: 0 0 2.6mm; }
+  .idline { margin: 0; font-size: 9.6pt; }
+  .idline .blank { margin: 0 1mm; }
+
+  h2 {
+    font-size: 10.6pt; letter-spacing: 0.7pt; text-transform: uppercase;
+    border-bottom: 0.9pt solid #000000;
+    padding-bottom: 1mm; margin: 4mm 0 2.6mm;
+  }
+  h2 .letter { font-size: 11.6pt; margin-right: 1.5mm; }
+
+  .q { margin: 0 0 2.6mm; }
+  .qtext { margin: 0 0 1.2mm; }
+  .hint { font-size: 8.4pt; margin: 0.6mm 0 0; }
+
+  pre.code {
+    margin: 0 0 1.5mm;
+    border: 0.7pt solid #000000;
+    padding: 1.6mm 2.8mm;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 8.8pt;
+    line-height: 1.3;
+    white-space: pre;
+  }
+  code {
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 8.8pt;
+  }
+  .blank {
+    display: inline-block;
+    border-bottom: 0.6pt solid #000000;
+    height: 3.8mm;
+    vertical-align: -0.8mm;
+  }
+  .line {
+    border-bottom: 0.5pt solid #555555;
+    height: 6.2mm;
+    margin: 0 0 1.4mm;
+  }
+  .answerline { margin: 0 0 1.4mm; }
+
+  table { width: 100%; border-collapse: collapse; margin: 0 0 2.2mm; }
+  th, td { border-bottom: 0.4pt solid #777777; padding: 1.1mm 2mm; text-align: left; vertical-align: middle; }
+  thead th { border-top: 0.8pt solid #000000; border-bottom: 0.8pt solid #000000; font-size: 8.8pt; }
+  tbody tr:last-child td { border-bottom: 0.8pt solid #000000; }
+  td.tickcell { width: 16mm; text-align: center; }
+  th.tickcell { width: 16mm; text-align: center; }
+  .tick {
+    display: inline-block; width: 3.4mm; height: 3.4mm;
+    border: 0.6pt solid #000000;
+  }
+  table.trace { table-layout: fixed; }
+  table.trace th, table.trace td { border: 0.5pt solid #000000; height: 7.5mm; padding: 1.2mm 2mm; }
+  table.trace th { border-bottom: 0.8pt solid #000000; }
+  table.trace tbody tr:last-child td { border-bottom: 0.5pt solid #000000; }
+  .mrow { display: flex; align-items: baseline; border-bottom: 0.4pt solid #777777;
+          padding: 0 0 0.9mm; margin: 0 0 1mm; }
+  .tight .q { margin-bottom: 2.2mm; }
+  .tight h2 { margin-top: 3.4mm; }
+  .mrow .mlabel { flex: 0 0 38mm; }
+
+  .wordbank {
+    display: inline-block; border: 0.6pt solid #000000;
+    padding: 1mm 2.2mm; font-size: 9.2pt; margin: 0 0 1.6mm;
+  }
+  .split { display: flex; gap: 5mm; align-items: flex-start; }
+  .split > pre.code { flex: 0 0 64mm; margin: 0; }
+  .split > div { flex: 1; }
+  .split table { margin: 0; }
+  .mapwrap { display: flex; align-items: center; gap: 6mm; margin: 0 0 2mm; }
+  .legend { font-size: 8.8pt; line-height: 1.6; }
+  .legend b { font-family: "Courier New", Consolas, monospace; font-size: 9.2pt; }
+  .writebox {
+    border: 0.6pt solid #000000;
+    padding: 1.4mm;
+  }
+  .small { font-size: 9pt; }
+</style>
+</head>
+<body>
+
+<section class="page">
+  <div class="kicker">Year 6 Digital Technologies &middot; Homework</div>
+  <h1>Python Homework &mdash; The Coin Mission</h1>
+  <p class="intro">Last lesson: variables, <code>print()</code> and <code>if</code>/<code>else</code>.
+  This lesson: <code>input()</code>, <code>int()</code>, <code>for</code> loops, functions, then a maze budget and a boss.
+  Write in the spaces; you may test your code in the game.</p>
+  <p class="idline">Name <span class="blank" style="width:58mm"></span>
+     &nbsp;Class <span class="blank" style="width:16mm"></span>
+     &nbsp;Date <span class="blank" style="width:26mm"></span></p>
+
+  <h2><span class="letter">A</span>Variables and print</h2>
+
+  <div class="q">
+    <p class="qtext"><b>A1.</b> Trace the program. What does it print?</p>
+    <pre class="code">coins = 30
+coins = coins - 5
+coins = coins + 10
+print(coins)</pre>
+    <p class="answerline">Answer: <span class="blank" style="width:40mm"></span></p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>A2.</b> Complete the program so the console shows <code>Welcome, Nova</code>.</p>
+    <pre class="code">player_name = ____________________
+print("Welcome,", ____________________)</pre>
+    <p class="hint">The first blank needs quotation marks.</p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>A3.</b> In one sentence, explain what <code>coins = coins - 5</code> does.</p>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <h2><span class="letter">B</span>Decisions with if and else</h2>
+
+  <div class="q">
+    <p class="qtext"><b>B1.</b> The variable <code>coins</code> is 30. Tick True or False for each question.</p>
+    <table>
+      <thead><tr><th>Question</th><th class="tickcell">True</th><th class="tickcell">False</th></tr></thead>
+      <tbody>
+        <tr><td><code>coins &gt;= 30</code></td><td class="tickcell"><span class="tick"></span></td><td class="tickcell"><span class="tick"></span></td></tr>
+        <tr><td><code>coins &gt; 30</code></td><td class="tickcell"><span class="tick"></span></td><td class="tickcell"><span class="tick"></span></td></tr>
+        <tr><td><code>coins == 30</code></td><td class="tickcell"><span class="tick"></span></td><td class="tickcell"><span class="tick"></span></td></tr>
+        <tr><td><code>coins &lt; 31</code></td><td class="tickcell"><span class="tick"></span></td><td class="tickcell"><span class="tick"></span></td></tr>
+        <tr><td><code>coins &lt;= 29</code></td><td class="tickcell"><span class="tick"></span></td><td class="tickcell"><span class="tick"></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>B2.</b> Complete the comparison, then write what each run prints.</p>
+    <pre class="code">coins = 34
+if coins ________ 30:
+    print("Attack!")
+else:
+    print("Keep collecting.")</pre>
+    <p class="answerline">When <code>coins</code> is 34, the output is <span class="blank" style="width:52mm"></span></p>
+    <p class="answerline">When <code>coins</code> is 20, the output is <span class="blank" style="width:52mm"></span></p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>B3.</b> Exactly 30 coins is enough for the attack. Which part of <code>coins &gt;= 30</code> tells you that?</p>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="footer">Python Homework &mdash; The Coin Mission<span class="right">Page 1 of 3</span></div>
+</section>
+
+<section class="page">
+  <h2><span class="letter">C</span>Asking questions with input() and int()</h2>
+
+  <div class="q">
+    <p class="qtext"><b>C1.</b> Circle what <code>input()</code> gives back to the program.</p>
+    <p class="small" style="margin:0 0 1.8mm">a number &nbsp;&middot;&nbsp; text &nbsp;&middot;&nbsp; True or False</p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>C2.</b> Complete the Create program from this lesson.</p>
+    <pre class="code">player_name = ____________("What is your name? ")
+print("Welcome,", ____________)</pre>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>C3.</b> Write the value of each expression.</p>
+    <p class="answerline"><code>int("7")</code> = <span class="blank" style="width:22mm"></span>
+       &nbsp;&nbsp;&nbsp;<code>int("14") + 6</code> = <span class="blank" style="width:22mm"></span></p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>C4.</b> The player types a number. Why do we still need <code>int()</code>?</p>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <h2><span class="letter">D</span>Repeating with for loops</h2>
+
+  <div class="q">
+    <p class="qtext"><b>D1.</b> Complete the trace table.</p>
+    <pre class="code">coins = 30
+for i in range(4):
+    coins = coins - 1</pre>
+    <table class="trace">
+      <colgroup><col style="width:20mm"><col style="width:26mm"><col></colgroup>
+      <thead><tr><th>Pass</th><th>Value of <code>i</code></th><th>Value of <code>coins</code> after the pass</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td></td><td></td></tr>
+        <tr><td>2</td><td></td><td></td></tr>
+        <tr><td>3</td><td></td><td></td></tr>
+        <tr><td>4</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p class="answerline">The loop body runs <span class="blank" style="width:14mm"></span> times.</p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>D2.</b> Write a loop that moves the robot six steps to the right.</p>
+    <pre class="code">for i in range(__________):
+    ______________________</pre>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>D3.</b> This loop has two mistakes. Write the correct version in the box.</p>
+    <pre class="code">for i in range(3)
+move_one_step_right()</pre>
+    <div class="writebox" style="height:27mm"></div>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>D4.</b> Each move costs 1 coin. You have 20 coins. How many coins are left after your loop from D2?</p>
+    <p class="answerline">Working: <span class="blank" style="width:60mm"></span></p>
+    <p class="answerline" style="margin-top:2mm">Answer: <span class="blank" style="width:40mm"></span></p>
+  </div>
+
+  <div class="footer">Python Homework &mdash; The Coin Mission<span class="right">Page 2 of 3</span></div>
+</section>
+
+<section class="page tight">
+  <h2><span class="letter">E</span>Functions</h2>
+
+  <div class="q">
+    <p class="qtext"><b>E1.</b> Match each part of the program to the correct word.</p>
+    <div class="split">
+      <pre class="code">def move_right(steps):
+    for i in range(steps):
+        move_one_step_right()
+
+move_right(8)</pre>
+      <div>
+        <p class="wordbank">argument &nbsp;&middot;&nbsp; call &nbsp;&middot;&nbsp; definition &nbsp;&middot;&nbsp; parameter</p>
+        <div class="mrow"><span class="mlabel">the <code>def</code> line</span><span class="blank" style="width:40mm"></span></div>
+        <div class="mrow"><span class="mlabel"><code>steps</code></span><span class="blank" style="width:40mm"></span></div>
+        <div class="mrow"><span class="mlabel"><code>move_right(8)</code></span><span class="blank" style="width:40mm"></span></div>
+        <div class="mrow" style="border-bottom:none"><span class="mlabel"><code>8</code></span><span class="blank" style="width:40mm"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>E2.</b> Write the helper <code>move_right(steps)</code> from memory, then answer the question.</p>
+    <div class="writebox" style="height:18mm"></div>
+    <p class="answerline" style="margin-top:1.6mm">A program calls <code>move_right(3)</code>, then <code>move_right(5)</code>.
+      Total steps: <span class="blank" style="width:14mm"></span>
+      Coins: <span class="blank" style="width:14mm"></span></p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>E3.</b> Why must the function be defined before it is called?</p>
+    <div class="line"></div>
+  </div>
+
+  <h2><span class="letter">F</span>Plan a route with a budget</h2>
+
+  <div class="mapwrap">
+    <svg class="map" viewBox="0 0 55.8 31.0" width="55.8mm" height="31.0mm" role="img" aria-label="Maze map">
+<rect x="0.0" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="6.2" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="12.4" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="18.6" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="24.8" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="31.0" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="37.2" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="43.4" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="49.6" y="0.0" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="0.0" y="6.2" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="6.2" y="6.2" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="12.4" y="6.2" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="18.6" y="6.2" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="24.8" y="6.2" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="31.0" y="6.2" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="37.2" y="6.2" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="43.4" y="6.2" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="49.6" y="6.2" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="0.0" y="12.4" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="6.2" y="12.4" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="12.4" y="12.4" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="18.6" y="12.4" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="24.8" y="12.4" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="31.0" y="12.4" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="37.2" y="12.4" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="43.4" y="12.4" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="49.6" y="12.4" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="0.0" y="18.6" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="6.2" y="18.6" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="12.4" y="18.6" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="18.6" y="18.6" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="24.8" y="18.6" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="31.0" y="18.6" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="37.2" y="18.6" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="43.4" y="18.6" width="6.2" height="6.2" fill="#ffffff" stroke="#a0a0a0" stroke-width="0.2"/>
+<rect x="49.6" y="18.6" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="0.0" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="6.2" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="12.4" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="18.6" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="24.8" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="31.0" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="37.2" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="43.4" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<rect x="49.6" y="24.8" width="6.2" height="6.2" fill="#e2e2e2" stroke="#000" stroke-width="0.35"/>
+<text x="9.30" y="10.85" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="5" font-weight="bold">S</text>
+<text x="15.50" y="23.25" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="5" font-weight="bold">c</text>
+<text x="46.50" y="23.25" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="5" font-weight="bold">B</text>
+</svg>
+    <div class="legend">
+      <div><b>S</b> &nbsp;start</div>
+      <div><b>c</b> &nbsp;gold coin (+10)</div>
+      <div><b>B</b> &nbsp;base</div>
+      <div><b>#</b> &nbsp;wall</div>
+      <div style="margin-top:0.8mm">Every move costs 1 coin.</div>
+    </div>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>F1.</b> Count the shortest route from <b>S</b> to <b>B</b>.
+      You start with 12 coins and collect the gold coin.<br>
+      Steps: <span class="blank" style="width:14mm"></span>
+      &nbsp;&nbsp;Coins when you reach the base: <span class="blank" style="width:16mm"></span></p>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>F2.</b> Write the route in Python. Use a loop for the longest straight part.</p>
+    <div class="writebox" style="height:18mm"></div>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>F3.</b> A friend starts with only 5 coins. Can they still reach the base? Show the numbers you used.</p>
+    <div class="line"></div>
+  </div>
+
+  <h2><span class="letter">G</span>The boss decision</h2>
+
+  <div class="q">
+    <p class="qtext"><b>G1.</b> Complete <code>super_attack()</code>.</p>
+    <pre class="code" style="padding-top:1.2mm;padding-bottom:1.2mm">def super_attack():
+    if coins ________ 30:
+        ____________________()
+        print("Super Attack Activated!")
+    else:
+        print("Not enough coins!")</pre>
+  </div>
+
+  <div class="q">
+    <p class="qtext"><b>G2.</b> The robot reaches the pad with exactly 30 coins. Does the attack fire?<br>
+      Why must the fire call be inside the guard?</p>
+    <div class="line"></div>
+  </div>
+
+  <div class="footer">Python Homework &mdash; The Coin Mission<span class="right">Page 3 of 3</span></div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python Maze Adventure — The Coin Mission</title>
+<style>
+  :root{
+    --bg:#0d1024; --deep:#080a18; --panel:#181e3a; --panel2:#20284a; --panel3:#283060;
+    --edge:#344074; --edge2:#4e5ea0; --text:#e8eeff; --dim:#96a2c8; --faint:#5e6a94;
+    --gold:#ffcd4a; --gold-d:#c48c18; --cyan:#4de2f0; --cyan-d:#1ea8c4;
+    --pink:#ff6fb5; --red:#ff5c5c; --green:#5cf096; --orange:#ffb86c; --purple:#bd93f9;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:radial-gradient(circle at 50% 28%,#151b3d 0%,var(--bg) 52%,var(--deep) 100%);
+    color:var(--text);font-family:Verdana,Geneva,"DejaVu Sans",sans-serif;
+    overflow:hidden;display:flex;align-items:center;justify-content:center;
+  }
+  #stage{
+    position:relative;width:1600px;height:900px;flex:0 0 auto;transform-origin:center center;
+    background:var(--bg);overflow:hidden;box-shadow:0 0 0 4px var(--deep),0 0 70px rgba(0,0,0,.85);
+  }
+  #stage:after{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:50;
+    background:repeating-linear-gradient(to bottom,rgba(255,255,255,.022) 0 2px,rgba(0,0,0,.055) 2px 4px);
+    mix-blend-mode:overlay;
+  }
+  .sprite-defs{position:absolute;width:0;height:0;overflow:hidden}
+
+  /* ---------- slides ---------- */
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:88px 96px 92px;z-index:10}
+  .slide.is-active{display:flex}
+  #slide-1{align-items:center;justify-content:center;text-align:center}
+  .kicker{
+    font-family:"Courier New",monospace;font-size:19px;letter-spacing:4px;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:10px;
+  }
+  h1,h2{margin:0;font-family:"Arial Black","Arial Bold",Impact,sans-serif;letter-spacing:1px;text-transform:uppercase}
+  h1{font-size:88px;line-height:.96;max-width:1240px;text-shadow:6px 6px 0 var(--deep),0 0 34px rgba(77,226,240,.35)}
+  h2{font-size:60px;line-height:1.02;text-shadow:4px 4px 0 var(--deep)}
+  .lead{font-size:30px;line-height:1.35;color:var(--text);max-width:1340px;margin:14px 0 0}
+  p,li{font-size:27px;line-height:1.38;margin:8px 0}
+  .dim{color:var(--dim)} .gold{color:var(--gold)} .cyan{color:var(--cyan)}
+  .pink{color:var(--pink)} .green{color:var(--green)} .purple{color:var(--purple)}
+  b{color:var(--gold)}
+  code{font-family:Menlo,Consolas,"Courier New",monospace;color:var(--gold);font-size:.94em}
+  .start-hint{
+    margin-top:54px;font-family:"Courier New",monospace;font-size:24px;letter-spacing:2px;color:var(--dim);
+    border:3px solid var(--edge);padding:14px 28px;background:rgba(24,30,58,.6);
+  }
+  .start-hint b{color:var(--cyan)}
+
+  /* ---------- layout ---------- */
+  .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:28px;align-items:start}
+  .cols-2.wide-left{grid-template-columns:1.3fr 1fr}
+  .cols-3{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:30px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:18px}
+  .card{
+    background:var(--panel);border:4px solid var(--edge);box-shadow:8px 8px 0 var(--deep);
+    padding:24px 26px;position:relative;
+  }
+  .card.gold{border-color:var(--gold)}
+  .card.cyan{border-color:var(--cyan)}
+  .card.pink{border-color:var(--pink)}
+  .card.green{border-color:var(--green)}
+  .card.purple{border-color:var(--purple)}
+  .card h3{
+    margin:0 0 10px;font-family:"Arial Black",Impact,sans-serif;font-size:27px;
+    text-transform:uppercase;letter-spacing:1px;color:var(--text);
+  }
+  .card p,.card li{font-size:23px;line-height:1.34;margin:7px 0}
+  .big-num{font-family:"Arial Black",Impact,sans-serif;font-size:44px;color:var(--gold);line-height:1.1;margin:6px 0}
+  .callout{
+    margin-top:20px;padding:18px 24px;border-left:10px solid var(--gold);background:var(--panel);
+    font-size:25px;line-height:1.34;box-shadow:6px 6px 0 var(--deep);
+  }
+  .callout.cyan{border-left-color:var(--cyan)}
+  .callout.pink{border-left-color:var(--pink)}
+  .callout.green{border-left-color:var(--green)}
+  .callout.purple{border-left-color:var(--purple)}
+
+  /* ---------- code ---------- */
+  .code-window{
+    background:#0a0d1e;border:4px solid var(--edge2);box-shadow:8px 8px 0 var(--deep);
+    overflow:hidden;margin:14px 0;
+  }
+  .code-bar{display:flex;gap:8px;align-items:center;padding:9px 14px;background:var(--panel2);border-bottom:4px solid var(--edge)}
+  .code-bar i{width:14px;height:14px;background:var(--red);display:inline-block}
+  .code-bar i:nth-child(2){background:var(--gold)}
+  .code-bar i:nth-child(3){background:var(--green)}
+  .code-bar span{margin-left:10px;font-family:"Courier New",monospace;font-size:17px;color:var(--dim);letter-spacing:1px}
+  pre{margin:0;padding:18px 24px;overflow:hidden}
+  code.python{
+    display:block;font-family:Menlo,Consolas,"Courier New",monospace;font-size:28px;line-height:1.42;
+    color:var(--text);white-space:pre-wrap;overflow-wrap:break-word;
+  }
+  .tight code.python{font-size:24px}
+  #slide-8 h2{font-size:52px}
+  #slide-8 .card{padding:16px 20px}
+  #slide-8 .card p{font-size:21px}
+  #slide-8 .col{gap:12px}
+  #slide-9 .cols-2.wide-left{grid-template-columns:1.45fr 1fr}
+  #slide-11 h2{font-size:52px}
+  #slide-4 .card{padding:18px 22px}
+  #slide-4 .card p{font-size:22px}
+  #slide-4 .col{gap:12px}
+  .tok-kw{color:var(--pink)}
+  .tok-str{color:var(--green)}
+  .tok-num{color:var(--orange)}
+  .tok-fn{color:var(--cyan)}
+  .tok-com{color:var(--faint)}
+  .tok-var{color:var(--gold)}
+
+  /* ---------- tables ---------- */
+  .table{width:100%;border-collapse:collapse;margin-top:20px;font-size:25px}
+  .table th,.table td{border:3px solid var(--edge);padding:11px 16px;text-align:left;vertical-align:top}
+  .table th{
+    background:var(--panel2);font-family:"Arial Black",Impact,sans-serif;text-transform:uppercase;
+    font-size:20px;letter-spacing:1px;color:var(--cyan);
+  }
+  .table td{background:rgba(24,30,58,.68)}
+  .table td:last-child{color:var(--gold);font-weight:bold}
+  .table.small{font-size:21px}
+  .table.small th,.table.small td{padding:8px 13px}
+  .table.compact{font-size:23px;margin-top:16px}
+  .table.compact th,.table.compact td{padding:8px 15px}
+
+  /* ---------- stats / steps / criteria ---------- */
+  .stat-row{display:flex;gap:24px;margin-top:22px;flex-wrap:wrap}
+  .stat{
+    flex:1 1 220px;background:var(--panel);border:4px solid var(--edge);box-shadow:8px 8px 0 var(--deep);
+    padding:16px 20px;text-align:center;
+  }
+  .stat b{display:block;font-family:"Arial Black",Impact,sans-serif;font-size:42px;color:var(--gold);line-height:1.05}
+  .stat span{display:block;margin-top:7px;font-size:19px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  .steps{display:flex;flex-direction:column;gap:13px;margin-top:20px}
+  .step{display:flex;gap:18px;align-items:flex-start;background:var(--panel);border:3px solid var(--edge);padding:13px 18px}
+  .step > b{
+    flex:0 0 48px;height:48px;display:grid;place-items:center;background:var(--cyan);color:var(--deep);
+    font-family:"Arial Black",Impact,sans-serif;font-size:26px;box-shadow:4px 4px 0 var(--deep);
+  }
+  .step p{margin:3px 0;font-size:22px}
+  .criteria{display:grid;grid-template-columns:1fr 1fr;gap:13px 24px;margin-top:24px}
+  .criteria div{
+    font-size:23px;line-height:1.3;padding:13px 17px;background:var(--panel);border:3px solid var(--edge);
+    display:flex;gap:12px;
+  }
+  .criteria div:before{content:"✓";color:var(--green);font-weight:bold}
+
+  /* ---------- sprites ---------- */
+  .sprite{width:1em;height:1em;vertical-align:-.15em;image-rendering:pixelated}
+  .sprite.big{width:92px;height:92px}
+  .sprite.mid{width:56px;height:56px}
+  .sprite-row{display:flex;gap:34px;align-items:center;justify-content:center;margin:24px 0}
+  .sprite-box{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:17px;color:var(--dim);letter-spacing:1px}
+
+  /* ---------- UI mock ---------- */
+  .ui-svg{width:100%;height:auto;display:block;border:4px solid var(--edge2);box-shadow:8px 8px 0 var(--deep);background:#0a0d1e}
+  .ui-label{font-family:"Courier New",monospace;font-size:14px;fill:#96a2c8;letter-spacing:1px}
+  .ui-code{font-family:"Courier New",monospace;font-size:11px;fill:#96a2c8}
+  .ui-title{font-family:"Arial Black",Impact,sans-serif;font-size:15px;fill:#e8eeff;letter-spacing:1px}
+
+  /* ---------- HUD ---------- */
+  #hud{
+    position:absolute;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 34px;z-index:60;background:linear-gradient(to bottom,rgba(8,10,24,.94),rgba(8,10,24,0));
+    pointer-events:none;
+  }
+  #hud-left{font-family:"Courier New",monospace;font-size:17px;letter-spacing:3px;color:var(--dim)}
+  .hud-dot{display:inline-block;width:10px;height:10px;background:var(--green);margin-right:10px;box-shadow:0 0 10px var(--green)}
+  #hud-right{display:flex;align-items:center;gap:18px}
+  #counter{font-family:"Courier New",monospace;font-size:20px;color:var(--text);letter-spacing:2px}
+  #progress{width:220px;height:14px;background:var(--panel);border:3px solid var(--edge)}
+  #progress-fill{height:100%;width:4.17%;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .18s ease}
+  #hint{
+    position:absolute;left:34px;bottom:20px;z-index:60;font-family:"Courier New",monospace;
+    font-size:15px;color:var(--faint);letter-spacing:1px;pointer-events:none;
+  }
+
+  /* ---------- overlays ---------- */
+  .slide .notes{display:none}
+  #notes-panel{
+    position:absolute;left:0;right:0;bottom:0;max-height:44%;z-index:80;background:rgba(8,10,24,.97);
+    border-top:4px solid var(--cyan);padding:16px 34px 22px;transform:translateY(105%);
+    transition:transform .2s ease;overflow:auto;
+  }
+  #notes-panel.is-open{transform:translateY(0)}
+  #notes-panel h3{
+    margin:0 0 8px;font-family:"Arial Black",Impact,sans-serif;font-size:19px;color:var(--cyan);
+    letter-spacing:2px;text-transform:uppercase;
+  }
+  #notes-body{font-size:20px;line-height:1.42;color:var(--text)}
+  #help-overlay{
+    position:absolute;inset:0;z-index:90;display:none;place-items:center;background:rgba(5,7,18,.93);
+  }
+  #help-overlay.is-open{display:grid}
+  .help-box{width:960px;background:var(--panel);border:4px solid var(--gold);box-shadow:12px 12px 0 var(--deep);padding:34px 42px}
+  .help-box h3{margin:0 0 18px;font-family:"Arial Black",Impact,sans-serif;font-size:26px;color:var(--gold);letter-spacing:2px;text-transform:uppercase}
+  .help-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 44px;font-size:23px}
+  .help-grid b{color:var(--gold);font-family:"Courier New",monospace}
+  #blackout{position:absolute;inset:0;background:#000;z-index:95;display:none}
+  #blackout.is-open{display:block}
+  #toast{
+    position:absolute;left:50%;bottom:58px;transform:translateX(-50%) translateY(18px);z-index:100;
+    background:var(--panel2);border:3px solid var(--cyan);padding:11px 22px;font-size:19px;opacity:0;
+    pointer-events:none;transition:opacity .2s,transform .2s;
+  }
+  #toast.is-visible{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @keyframes pop{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+  .slide.is-active .pop{animation:pop .3s ease both}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+  @media print{
+    body{overflow:visible;display:block;background:#fff}
+    #stage{width:1600px;height:auto;transform:none!important;box-shadow:none}
+    #hud,#hint,#notes-panel,#help-overlay,#blackout,#toast{display:none!important}
+    .slide{position:relative;display:flex!important;width:1600px;height:900px;page-break-after:always}
+  }
+
+  /* ---------- quizzes ---------- */
+  .quiz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:28px;align-items:start}
+  .quiz{
+    background:var(--panel);border:4px solid var(--edge);box-shadow:8px 8px 0 var(--deep);
+    padding:20px 22px;display:flex;flex-direction:column;gap:12px;
+  }
+  .quiz.solved{border-color:var(--green);box-shadow:8px 8px 0 rgba(92,240,150,.18)}
+  .quiz .q{font-size:21px;line-height:1.3;margin:0}
+  .quiz .q code{font-size:.92em}
+  .q-opts{display:flex;flex-direction:column;gap:9px}
+  .q-opt{
+    display:flex;gap:10px;align-items:center;text-align:left;width:100%;
+    background:var(--panel2);color:var(--text);border:3px solid var(--edge);
+    padding:9px 12px;font:inherit;font-size:19px;line-height:1.25;cursor:pointer;
+  }
+  .q-opt:hover{border-color:var(--cyan)}
+  .q-opt:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .q-opt .tag{
+    flex:0 0 28px;height:28px;display:grid;place-items:center;background:var(--edge2);
+    color:var(--deep);font-family:"Arial Black",Impact,sans-serif;font-size:16px;
+  }
+  .q-opt.correct{border-color:var(--green);background:rgba(92,240,150,.14)}
+  .q-opt.correct .tag{background:var(--green)}
+  .q-opt.wrong{border-color:var(--red);background:rgba(255,92,92,.12)}
+  .q-opt.wrong .tag{background:var(--red)}
+  .q-feedback{min-height:22px;margin:0;font-size:17px;color:var(--dim)}
+  .quiz.solved .q-feedback{color:var(--green)}
+  .q-explain{display:none;margin:0;font-size:17px;line-height:1.3;color:var(--text);border-top:2px solid var(--edge);padding-top:10px}
+  .quiz.solved .q-explain{display:block}
+  .q-reset{
+    align-self:flex-start;background:none;border:2px solid var(--edge2);color:var(--dim);
+    font-family:"Courier New",monospace;font-size:14px;letter-spacing:1px;padding:5px 12px;cursor:pointer;
+  }
+  .q-reset:hover{border-color:var(--cyan);color:var(--cyan)}
+  @media print{.q-explain{display:block!important}.q-feedback{color:var(--dim)!important}}
+</style>
+</head>
+<body>
+<svg class="sprite-defs" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-robot" viewBox="0 0 16 16">
+    <rect x="4" y="1" width="8" height="2" fill="#c9d4f0"/>
+    <rect x="3" y="3" width="10" height="8" fill="#4de2f0"/>
+    <rect x="5" y="5" width="2" height="2" fill="#0d1024"/>
+    <rect x="9" y="5" width="2" height="2" fill="#0d1024"/>
+    <rect x="5" y="8" width="6" height="1" fill="#0d1024"/>
+    <rect x="4" y="11" width="8" height="4" fill="#c9d4f0"/>
+    <rect x="6" y="11" width="4" height="2" fill="#ff6fb5"/>
+    <rect x="1" y="5" width="2" height="6" fill="#96a2c8"/>
+    <rect x="13" y="5" width="2" height="6" fill="#96a2c8"/>
+  </symbol>
+  <symbol id="i-coin" viewBox="0 0 16 16">
+    <rect x="4" y="2" width="8" height="12" fill="#ffcd4a"/>
+    <rect x="2" y="4" width="12" height="8" fill="#ffcd4a"/>
+    <rect x="5" y="5" width="6" height="6" fill="#c48c18"/>
+    <rect x="6" y="6" width="4" height="1" fill="#fff3c4"/>
+  </symbol>
+  <symbol id="i-chest" viewBox="0 0 16 16">
+    <rect x="2" y="6" width="12" height="8" fill="#bd93f9"/>
+    <rect x="2" y="5" width="12" height="3" fill="#8f6fe0"/>
+    <rect x="7" y="8" width="2" height="4" fill="#ffcd4a"/>
+    <rect x="6" y="9" width="4" height="2" fill="#ffcd4a"/>
+  </symbol>
+  <symbol id="i-wall" viewBox="0 0 16 16">
+    <rect x="1" y="1" width="14" height="14" fill="#4a5170"/>
+    <rect x="1" y="1" width="14" height="2" fill="#6b749c"/>
+    <rect x="1" y="7" width="14" height="2" fill="#343b58"/>
+    <rect x="7" y="3" width="2" height="4" fill="#343b58"/>
+    <rect x="3" y="9" width="2" height="4" fill="#343b58"/>
+    <rect x="11" y="9" width="2" height="4" fill="#343b58"/>
+  </symbol>
+  <symbol id="i-base" viewBox="0 0 16 16">
+    <rect x="2" y="10" width="12" height="4" fill="#344074"/>
+    <rect x="4" y="4" width="8" height="6" fill="#ff5c5c"/>
+    <rect x="6" y="6" width="4" height="2" fill="#ffcd4a"/>
+    <rect x="1" y="8" width="2" height="6" fill="#4e5ea0"/>
+    <rect x="13" y="8" width="2" height="6" fill="#4e5ea0"/>
+  </symbol>
+  <symbol id="i-boss" viewBox="0 0 16 16">
+    <rect x="3" y="3" width="10" height="10" fill="#ff6fb5"/>
+    <rect x="2" y="1" width="3" height="3" fill="#bd93f9"/>
+    <rect x="11" y="1" width="3" height="3" fill="#bd93f9"/>
+    <rect x="5" y="6" width="2" height="2" fill="#0d1024"/>
+    <rect x="9" y="6" width="2" height="2" fill="#0d1024"/>
+    <rect x="5" y="10" width="6" height="1" fill="#0d1024"/>
+  </symbol>
+</defs></svg>
+
+<div id="stage">
+  <div id="hud">
+    <div id="hud-left"><span class="hud-dot"></span>PYTHON MAZE ADVENTURE</div>
+    <div id="hud-right"><span id="counter">1 / 24</span><div id="progress"><div id="progress-fill"></div></div></div>
+  </div>
+  <div id="hint">→ / Space · F fullscreen · N notes · R reset quizzes · ? help</div>
+
+  <section class="slide is-active" id="slide-1" aria-hidden="false">
+    <div class="kicker">Year 6 Digital Technologies · 90 minutes</div>
+    <h1>Python Maze Adventure: The Coin Mission</h1>
+    <div class="sprite-row pop">
+      <span class="sprite-box"><svg class="sprite big" viewBox="0 0 16 16"><use href="#i-robot"/></svg><span>YOUR ROBOT</span></span>
+      <span class="sprite-box"><svg class="sprite big" viewBox="0 0 16 16"><use href="#i-coin"/></svg><span>COINS</span></span>
+      <span class="sprite-box"><svg class="sprite big" viewBox="0 0 16 16"><use href="#i-chest"/></svg><span>SUPPLIES</span></span>
+      <span class="sprite-box"><svg class="sprite big" viewBox="0 0 16 16"><use href="#i-boss"/></svg><span>THE BOSS</span></span>
+    </div>
+    <p class="lead">Python first. The maze is where we put the ideas into practice.</p>
+    <div class="start-hint pop">Press <b>→</b> or <b>Space</b> to begin</div>
+    <aside class="notes">Welcome the class. Make the promise clear from the first slide: today we learn four Python ideas, and the maze is our practice ground, not the lesson. The ideas are variables and if, input and int, for loops, and functions with parameters. The last part of the lesson uses those ideas to escape four levels and charge the boss.</aside>
+  </section>
+  <section class="slide" id="slide-2" aria-hidden="true">
+    <div class="kicker">The plan · knowledge first</div>
+    <h2>Today's Mission</h2>
+    <p class="lead">Four Python ideas, then a game that uses every one of them.</p>
+    <div class="cols-2">
+      <div class="steps">
+        <div class="step"><b>1</b><p><b>Review:</b> variables, comparisons and if-else.</p></div>
+        <div class="step"><b>2</b><p><b>input()</b> asks the player a question; <b>int()</b> turns text into a number.</p></div>
+        <div class="step"><b>3</b><p><b>for</b> loops with <b>range()</b> — repeat code.</p></div>
+        <div class="step"><b>4</b><p><b>def</b> and parameters — build reusable blocks.</p></div>
+      </div>
+      <div class="col">
+        <div class="card gold"><h3>The game is practice</h3><p>Every maze step is the loop you write. Every coin check is the if you write. Every route is your own function at work.</p></div>
+        <div class="card cyan"><h3>Three stages</h3><p><b>Create Your Explorer</b> · <b>Escape the Maze</b> · <b>Super Attack</b></p></div>
+        <div class="callout green">We learn the idea, try an example, then take a quick quiz — before we touch the maze.</div>
+      </div>
+    </div>
+    <aside class="notes">Read the four learning goals aloud. Point out the deliberate order: revision, input, loops, functions, and only then the game. Explain that the game will feel easier because every command maps to an idea we have already practised. The three stage titles are the same tabs students will see in the app.</aside>
+  </section>
+  <section class="slide" id="slide-3" aria-hidden="true">
+    <div class="kicker">Review · variables</div>
+    <h2>Quick Revision – Variables</h2>
+    <div class="cols-2">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>predict_me.py</span></div>
+        <pre><code class="python">coins = 50
+coins = coins - 1
+print(coins)      # 49</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>A labelled box</h3><p><code>coins</code> is the name. <code>50</code> is the value inside.</p></div>
+        <div class="card gold"><h3>Read it right to left</h3><p>Take the current <code>coins</code>, subtract 1, put the result back in the box.</p></div>
+        <div class="callout pink">The maze uses this exact rule: every step costs 1 coin.</div>
+      </div>
+    </div>
+    <aside class="notes">Ask pairs to predict the output before revealing it; the answer is 49. This is the deliberate misconception: coins = coins - 1 looks impossible, but the right side is calculated first. Every successful step in the maze runs this same idea. Students will meet it again in the loop tracing slide.</aside>
+  </section>
+  <section class="slide" id="slide-4" aria-hidden="true">
+    <div class="kicker">Review · comparisons</div>
+    <h2>Quick Revision – Comparison Operators</h2>
+    <div class="cols-2">
+      <table class="table compact">
+        <tr><th>Operator</th><th>Question it asks</th><th>Example</th></tr>
+        <tr><td><code>==</code></td><td>Are they equal?</td><td><code>coins == 30</code></td></tr>
+        <tr><td><code>&gt;</code></td><td>Is the left bigger?</td><td><code>coins &gt; 30</code></td></tr>
+        <tr><td><code>&lt;</code></td><td>Is the left smaller?</td><td><code>coins &lt; 30</code></td></tr>
+        <tr><td><code>&gt;=</code></td><td>At least as big?</td><td><code>coins &gt;= 30</code></td></tr>
+      </table>
+      <div class="col">
+        <div class="code-window">
+          <div class="code-bar"><i></i><i></i><i></i><span>compare.py</span></div>
+          <pre><code class="python">coins = 34
+print(coins &gt;= 30)   # True
+print(coins == 30)   # False</code></pre>
+        </div>
+        <div class="callout gold"><code>=</code> puts a value in a box. <code>==</code> asks a question. Do not mix them up.</div>
+      </div>
+    </div>
+    <aside class="notes">A comparison always answers True or False. Read each operator as a question: equal, bigger, smaller, or at least as big. The boss uses coins &gt;= 30, so students must see that exactly 30 passes. Stress the difference between one equals sign for assignment and two for comparison; this is the most common slip in the exit ticket.</aside>
+  </section>
+  <section class="slide" id="slide-5" aria-hidden="true">
+    <div class="kicker">Review · decisions</div>
+    <h2>Quick Revision – If-else</h2>
+    <div class="cols-2">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>decide.py</span></div>
+        <pre><code class="python">if coins &gt;= 30:
+    print("Ready to attack!")
+else:
+    print("Keep collecting!")</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>True</h3><p>The indented lines under <code>if</code> run.</p></div>
+        <div class="card pink"><h3>False</h3><p>Python jumps to the indented lines under <code>else</code>.</p></div>
+        <div class="callout">Colon at the end. Indent the branch. Only one branch runs.</div>
+      </div>
+    </div>
+    <div class="callout gold">Trace it: with 34 the first branch runs; with 20 coins the else branch runs.</div>
+    <aside class="notes">Trace the snippet twice, first with 34 and then with 20. Ask which branch runs and why. Point out the colon and the indentation; those are the two errors students make most often. Tell them this exact pattern will return in the Super Attack stage, once they have earned the coins in the maze.</aside>
+  </section>
+  <section class="slide" id="slide-6" aria-hidden="true">
+    <div class="kicker">Review quiz · 3 questions</div>
+    <h2>Review Quiz</h2>
+    <p class="lead">Choose an answer. Wrong answers can be tried again.</p>
+    <div class="quiz-grid">
+    <div class="quiz" data-answer="b">
+      <p class="q">After these lines, what is <code>coins</code>?<br><code>coins = 20</code> · <code>coins = coins + 5</code></p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> 20</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> 25</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> 5</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">The right side is calculated first: 20 + 5 = 25, then stored back in coins.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">With <code>coins = 30</code>, what does <code>coins &gt;= 30</code> give?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> True</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> False</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> A syntax error</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">&gt;= means at least, so 30 counts. The comparison gives the value True.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">If the <code>if</code> condition is False, which lines run?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> The indented lines under if</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> Both branches</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> The indented lines under else</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">Exactly one branch runs. A False condition skips the if body and runs the else body.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    </div>
+    <aside class="notes">Give students a minute to answer all three, then reveal. Ask them to say the rule, not just the letter. The three rules are: assignment calculates the right side first, comparisons answer True or False, and a False if condition jumps to else. Reset all quizzes with the R key before the next class.</aside>
+  </section>
+  <section class="slide" id="slide-7" aria-hidden="true">
+    <div class="kicker">Input · asking a question</div>
+    <h2>Asking for Input with input()</h2>
+    <div class="cols-2">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>name.py</span></div>
+        <pre><code class="python">player_name = input("What is your name? ")
+print("Hello", player_name)</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>The prompt</h3><p>The text inside the brackets is the question the player sees.</p></div>
+        <div class="card gold"><h3>The answer</h3><p>The player's typing comes back from <code>input()</code>.</p></div>
+        <div class="card pink"><h3>The variable</h3><p><code>player_name</code> stores the answer so we can use it later.</p></div>
+      </div>
+    </div>
+    <div class="callout cyan">Sample run: the prompt appears, the player types <b>Nova</b>, and the program prints <b>Hello Nova</b>.</div>
+    <aside class="notes">Run this live if possible: the game pauses and shows a dialog for the answer. The important idea is that input() hands back whatever the player typed. Ask what would happen if the player typed nothing and pressed Enter; the variable would hold an empty string. Keep the focus on storing the answer, not on formatting.</aside>
+  </section>
+  <section class="slide tight" id="slide-8" aria-hidden="true">
+    <div class="kicker">Input · text to number</div>
+    <h2>Turning Text into Numbers with int()</h2>
+    <div class="cols-2">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>steps.py</span></div>
+        <pre><code class="python">steps_text = input("How many steps? ")
+steps = int(steps_text)
+print(steps + 1)</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>input() gives text</h3><p>Even <b>7</b> arrives as the text <b>"7"</b>, not the number 7.</p></div>
+        <div class="card gold"><h3>int() converts</h3><p><code>int("7")</code> is the number <code>7</code>, ready for maths and comparisons.</p></div>
+        <div class="card pink"><h3>Bad input</h3><p><code>int("seven")</code> cannot convert, so Python reports an error.</p></div>
+      </div>
+    </div>
+    <div class="callout gold">Nest the calls: <code>int(input("How many steps? "))</code> asks first, then converts the answer.</div>
+    <aside class="notes">Demonstrate the difference: "7" plus 1 would join text, while 7 plus 1 gives 8. Then type seven instead of 7 to show the friendly Value Error. Explain that int() only works on text that looks like a whole number. The nested form is worth showing because it is shorter, but students may use two lines if that is clearer. The game fixes <code>weapon_power</code> at 5, so the Create mission does not need this conversion; the skill still matters whenever a program asks for a number.</aside>
+  </section>
+  <section class="slide tight" id="slide-9" aria-hidden="true">
+    <div class="kicker">Input · putting it together</div>
+    <h2>Putting Input Together</h2>
+    <div class="cols-2 wide-left">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>my_explorer.py</span></div>
+        <pre><code class="python">player_name = input("What is your name? ")
+
+print("Welcome,", player_name)</code></pre>
+      </div>
+      <div class="col">
+        <div class="steps">
+          <div class="step"><b>1</b><p>Ask for the name. Store the text in <code>player_name</code>.</p></div>
+          <div class="step"><b>2</b><p><code>input()</code> gives text — perfect for a name, so no conversion is needed.</p></div>
+          <div class="step"><b>3</b><p>Print the welcome. The game sets <code>weapon_power</code> to 5.</p></div>
+        </div>
+        <div class="callout green">Sample run: the player types <b>Nova</b> and the console shows <b>Welcome, Nova</b>. Weapon power stays 5.</div>
+      </div>
+    </div>
+    <aside class="notes">This is the worked example for the Create mission, but students will type their own version from an empty editor in the game. Walk through the three steps and point out that the answer from input() is already text, which is exactly what a name needs. The game supplies weapon_power (fixed at 5) for this mission, so there is no second question and no int() here. Ask where int() would be needed if the program asked for a number instead.</aside>
+  </section>
+  <section class="slide" id="slide-10" aria-hidden="true">
+    <div class="kicker">Input quiz · 3 questions</div>
+    <h2>Input Quiz</h2>
+    <p class="lead">Three checks on input() and int().</p>
+    <div class="quiz-grid">
+    <div class="quiz" data-answer="a">
+      <p class="q">What type of value does <code>input()</code> always return?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> Text</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> A number</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> True or False</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">input() always hands back text, even when the player types digits.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">What is <code>int("7")</code>?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> The text "7"</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> The number 7</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> An error</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">int() converts number text into a real number, so "7" becomes 7.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">Which line asks for a number of steps and stores a number?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> steps = input(int("Steps: "))</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> steps = "Steps"</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> steps = int(input("Steps: "))</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">The inner input() asks, then the outer int() converts the answer before storing it.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    </div>
+    <aside class="notes">Ask students to explain their choice in one sentence before revealing. The rules: input returns text, int converts number text, and the inner call runs first. Option a on question three is the classic nesting mistake; use it to show that int() cannot be given a question as its argument.</aside>
+  </section>
+  <section class="slide" id="slide-11" aria-hidden="true">
+    <div class="kicker">Loops · the problem</div>
+    <h2>Why Loops? The Copy-Paste Problem</h2>
+    <div class="cols-2 wide-left">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>copy_paste.py</span></div>
+        <pre><code class="python">move_one_step_right()
+move_one_step_right()
+move_one_step_right()
+move_one_step_right()</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>It works</h3><p>Four lines, four steps forward, four coins spent.</p></div>
+        <div class="card pink"><h3>But it does not scale</h3><p>Twenty steps means twenty lines. One typo hides in the middle.</p></div>
+        <div class="callout gold">A loop lets us say <b>do this again</b> once, instead of repeating the line by hand.</div>
+      </div>
+    </div>
+    <div class="callout pink">Predict: how many lines would 40 steps need without a loop? Forty. The next slide does it in two.</div>
+    <aside class="notes">Let the repetition feel silly. Ask the class what happens when the route needs forty steps, or when we change the step count from four to twelve. The point is not that repetition is wrong, but that it hides mistakes and makes edits expensive. This sets up the for loop as a better way to express the same action.</aside>
+  </section>
+  <section class="slide" id="slide-12" aria-hidden="true">
+    <div class="kicker">Loops · the tool</div>
+    <h2>Introducing for and range()</h2>
+    <div class="cols-2">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>first_loop.py</span></div>
+        <pre><code class="python">for i in range(3):
+    move_one_step_right()
+print("Done")</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>The for line</h3><p>Ends with a <b>colon</b>. It says: repeat the indented lines below.</p></div>
+        <div class="card gold"><h3>range(3)</h3><p>Counts 0, 1, 2 — that is <b>three</b> repeats, not four.</p></div>
+        <div class="card pink"><h3>The body</h3><p><code>move_one_step_right()</code> is indented, so it belongs to the loop.</p></div>
+      </div>
+    </div>
+    <div class="callout green"><code>range(5)</code> repeats five times. The number is a <b>count</b>, not the last value.</div>
+    <aside class="notes">Type the two-line loop and run it four times, changing the count each time. Ask students to predict the number of steps for range(5) before running. Emphasise the colon and indentation; a missing colon or a lost indent is the usual failure. The print line is not indented, so it runs once after the loop.</aside>
+  </section>
+  <section class="slide" id="slide-13" aria-hidden="true">
+    <div class="kicker">Loops · trace it</div>
+    <h2>Tracing a for Loop</h2>
+    <div class="cols-2 wide-left">
+      <table class="table compact">
+        <tr><th>Pass</th><th><code>i</code></th><th>Line that runs</th><th>Coins after</th></tr>
+        <tr><td>1</td><td>0</td><td><code>move_one_step_right()</code></td><td>29</td></tr>
+        <tr><td>2</td><td>1</td><td><code>move_one_step_right()</code></td><td>28</td></tr>
+        <tr><td>3</td><td>2</td><td><code>move_one_step_right()</code></td><td>27</td></tr>
+      </table>
+      <div class="col">
+        <div class="card cyan"><h3>Start: 30 coins</h3><p>Each pass costs exactly one coin.</p></div>
+        <div class="card gold"><h3>Three passes</h3><p>Three steps, three coins, and <code>i</code> goes 0, 1, 2.</p></div>
+        <div class="callout pink">The loop body does not run for <code>i = 3</code>. The count is already finished.</div>
+      </div>
+    </div>
+    <aside class="notes">Trace the loop on the board before running it. Cover the coins column and ask the class to fill it in. The key insight is that range(3) gives three passes numbered from zero, and each pass executes the whole indented body once. This trace is the mental model students need for planning maze routes.</aside>
+  </section>
+  <section class="slide" id="slide-14" aria-hidden="true">
+    <div class="kicker">Loops · game practice</div>
+    <h2>Your First Game Loop</h2>
+    <div class="cols-2 wide-left">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>corridor.py</span></div>
+        <pre><code class="python">for i in range(8):
+    move_one_step_right()
+print("Coins left:", coins)</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>8 repeats</h3><p>Eight steps forward. Eight coins spent.</p></div>
+        <div class="card gold"><h3>Change one number</h3><p>Range(12) walks twelve steps without adding a line.</p></div>
+        <div class="card pink"><h3>Indent the body</h3><p>Only the indented lines repeat. The print runs once.</p></div>
+      </div>
+    </div>
+    <div class="callout green">This is already a maze program. On Level 1 the corridor is straight — count the steps, then loop.</div>
+    <aside class="notes">Have students predict the coins after eight steps, then after changing the count to twelve. The print statement is deliberately outside the loop, so it runs once at the end. Remind them that every move costs a coin and points the robot that way: a loop that only moves right walks into a wall unless the corridor is straight. Level 1 is the safe place to test this.</aside>
+  </section>
+  <section class="slide" id="slide-15" aria-hidden="true">
+    <div class="kicker">Loop quiz · 3 questions</div>
+    <h2>For Loop Quiz</h2>
+    <p class="lead">Three checks on range(), colons and coin costs.</p>
+    <div class="quiz-grid">
+    <div class="quiz" data-answer="b">
+      <p class="q">How many times does <code>range(5)</code> repeat the body?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> 4 times</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> 5 times</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> 6 times</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">range(5) counts 0, 1, 2, 3, 4 — five passes, not five as a stopping value.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">What must the <code>for</code> line end with?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> A colon :</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> A semicolon ;</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> Nothing at all</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">The colon opens the loop body. The indented lines below it are repeated.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">A loop that moves once per pass, four passes, costs how many coins?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> 0 coins</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> 1 coin</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> 4 coins</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">Each move costs 1 coin, and four passes make four moves: 4 coins.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    </div>
+    <aside class="notes">Ask for the rule behind each answer. The three rules: range(n) means n passes, a for line ends with a colon, and every move costs one coin. Question three links the loop count directly to the maze budget, which is the skill students need when a level starts with fewer coins than the route's length.</aside>
+  </section>
+  <section class="slide" id="slide-16" aria-hidden="true">
+    <div class="kicker">Functions · the idea</div>
+    <h2>What Is a Function?</h2>
+    <div class="cols-2">
+      <div class="col">
+        <div class="card cyan"><h3>A named recipe</h3><p>A function is a block of code with a name. Write it once, use it whenever you need it.</p></div>
+        <div class="card gold"><h3>Define, then call</h3><p><code>def</code> creates the function. Writing its name with brackets calls it.</p></div>
+        <div class="card pink"><h3>No return needed</h3><p>Our game functions do something on screen. They do not send a value back.</p></div>
+      </div>
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>cheer.py</span></div>
+        <pre><code class="python">def cheer():
+    print("Go robot!")
+
+cheer()
+cheer()</code></pre>
+      </div>
+    </div>
+    <div class="callout green">The definition is the recipe. The two calls are two meals — same code, used twice.</div>
+    <aside class="notes">Use a non-game example first so the syntax is not hidden by the maze. Run the cheer program and point out that the word cheer appears twice because the function is called twice. Ask what would happen with no call at the bottom: nothing is printed, because defining a function does not run it.</aside>
+  </section>
+  <section class="slide" id="slide-17" aria-hidden="true">
+    <div class="kicker">Functions · define and call</div>
+    <h2>Defining and Calling a Function</h2>
+    <div class="cols-2 wide-left">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>move_three.py</span></div>
+        <pre><code class="python">def move_right():
+    for i in range(3):
+        move_one_step_right()
+
+move_right()</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>Definition</h3><p><code>def move_right():</code> names the recipe. The body is indented.</p></div>
+        <div class="card gold"><h3>Call</h3><p><code>move_right()</code> at the bottom runs the recipe once.</p></div>
+        <div class="card pink"><h3>Order matters</h3><p>Define the function before you call it.</p></div>
+      </div>
+    </div>
+    <div class="callout gold">This function always moves three steps. The next slide gives it a slot so it can move any number.</div>
+    <aside class="notes">Trace the definition line by line, then the call. Ask why the call is not indented: it is top-level code, outside the function. Delete the call and run again to show that nothing happens. This is the moment to establish define versus call, because the next slide adds a parameter on top of the same skeleton.</aside>
+  </section>
+  <section class="slide" id="slide-18" aria-hidden="true">
+    <div class="kicker">Functions · parameters</div>
+    <h2>Adding Parameters to Functions</h2>
+    <div class="cols-2 wide-left">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>move_right.py</span></div>
+        <pre><code class="python">def move_right(steps):
+    for i in range(steps):
+        move_one_step_right()
+
+move_right(3)
+move_right(8)</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>Parameter</h3><p><code>steps</code> is a slot in the definition. It has no value until the function is called.</p></div>
+        <div class="card gold"><h3>Argument</h3><p><code>3</code> and <code>8</code> are the values that fill the slot.</p></div>
+        <div class="card pink"><h3>range(steps)</h3><p>The loop count changes with the argument, so one function fits many routes.</p></div>
+      </div>
+    </div>
+    <div class="callout green">Same function, two different jobs: 3 steps, then 8 steps.</div>
+    <aside class="notes">Trace the first call with steps equal to 3 and the second with steps equal to 8. Show that the definition does not change. Ask students to write the call for five steps before revealing it. The key vocabulary is parameter in the definition, argument in the call; keep using both words so the distinction sticks.</aside>
+  </section>
+  <section class="slide" id="slide-19" aria-hidden="true">
+    <div class="kicker">Functions · build it</div>
+    <h2>Building move_right(steps)</h2>
+    <div class="cols-2 wide-left">
+      <div class="code-window">
+        <div class="code-bar"><i></i><i></i><i></i><span>my_toolkit.py</span></div>
+        <pre><code class="python">def move_right(steps):
+    for i in range(steps):
+        move_one_step_right()
+
+move_right(2)
+move_right(8)
+print("Coins left:", coins)</code></pre>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>2 + 8 = 10</h3><p>Two calls, ten steps, ten coins.</p></div>
+        <div class="card gold"><h3>Reuse</h3><p>The same helper works in any corridor. Change the argument, not the code.</p></div>
+        <div class="card pink"><h3>One coin each</h3><p>Every move costs 1 coin, so the step count is the budget.</p></div>
+      </div>
+    </div>
+    <div class="callout green">This helper is yours to use in the maze. You still choose the directions and the step counts.</div>
+    <aside class="notes">Run the program and check the console: ten coins spent. Ask why the function is written before the calls. Point out that the helper is a tool, not an answer: it moves whatever number of steps you ask for, but the student still has to plan the route around walls and supplies. This distinction matters for the next game section.</aside>
+  </section>
+  <section class="slide" id="slide-20" aria-hidden="true">
+    <div class="kicker">Function quiz · 3 questions</div>
+    <h2>Function Quiz</h2>
+    <p class="lead">Three checks on def, parameters and calls.</p>
+    <div class="quiz-grid">
+    <div class="quiz" data-answer="a">
+      <p class="q">What does <code>def</code> do?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> Defines a function</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> Calls a function</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> Repeats a loop</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">def creates the function and gives it a name. A call runs it later.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">In the call <code>move_right(8)</code>, what value does <code>steps</code> receive?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> 0</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> 8</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> The text "8"</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">The argument 8 fills the parameter steps for that call.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">What happens if you call a function before its <code>def</code> line?</p>
+      <div class="q-opts">
+      <button class="q-opt" type="button" data-opt="a"><span class="tag">A</span> It runs twice</button>
+      <button class="q-opt" type="button" data-opt="b"><span class="tag">B</span> Nothing at all</button>
+      <button class="q-opt" type="button" data-opt="c"><span class="tag">C</span> Python reports an error</button>
+      </div>
+      <p class="q-feedback" aria-live="polite"></p>
+      <p class="q-explain">Python needs the definition before it can run the call. Define first, call second.</p>
+      <button class="q-reset" type="button">Reset</button>
+    </div>
+    </div>
+    <aside class="notes">Require the reason as well as the letter. The rules: def defines, the argument fills the parameter, and definitions must come before calls. If time allows, ask students to write the two-line helper from memory on a whiteboard, then compare with the slide. This is the last quiz before the game, so it is also a readiness check.</aside>
+  </section>
+  <section class="slide" id="slide-21" aria-hidden="true">
+    <div class="kicker">Game · the practice ground</div>
+    <h2>Meet the Game</h2>
+    <div class="cols-2 wide-left">
+      <div class="col">
+      <svg class="ui-svg" viewBox="0 0 820 430" role="img" aria-label="Game screen: arena on the left, command strip and editor on the right">
+        <rect width="820" height="430" fill="#0a0d1e"/>
+        <rect x="10" y="10" width="455" height="410" fill="#121735" stroke="#344074" stroke-width="3"/>
+        <text x="28" y="42" class="ui-title">ESCAPE THE MAZE</text>
+        <text x="28" y="66" class="ui-label">LEVEL 1 2 3 4      HINT</text>
+        <rect x="28" y="82" width="419" height="250" fill="#0d1024" stroke="#283060" stroke-width="2"/>
+        <rect x="44" y="98" width="24" height="24" fill="#ffcd4a"/>
+        <rect x="92" y="98" width="24" height="24" fill="#4de2f0"/>
+        <rect x="320" y="292" width="24" height="24" fill="#ff5c5c"/>
+        <rect x="110" y="180" width="270" height="18" fill="#4a5170"/>
+        <text x="28" y="356" class="ui-label">STEPS 0    COINS 30 / 30    SUPPLIES 1</text>
+        <text x="28" y="392" class="ui-label">Arena: robot, walls and base.</text>
+        <rect x="485" y="10" width="325" height="410" fill="#121735" stroke="#344074" stroke-width="3"/>
+        <text x="503" y="42" class="ui-title">YOUR CODE</text>
+        <rect x="503" y="56" width="289" height="94" fill="#181e3a" stroke="#283060" stroke-width="2"/>
+        <text x="515" y="80" class="ui-label">COMMANDS</text>
+        <text x="515" y="100" class="ui-code">move_one_step_up()  move_one_step_down()</text>
+        <text x="515" y="120" class="ui-code">move_one_step_left()  move_one_step_right()</text>
+        <text x="515" y="140" class="ui-code">coins   print(...)</text>
+        <rect x="503" y="162" width="289" height="128" fill="#0a0d1e" stroke="#4e5ea0" stroke-width="3"/>
+        <text x="515" y="188" class="ui-label">Write your route here.</text>
+        <rect x="503" y="302" width="289" height="104" fill="#0d1024" stroke="#283060" stroke-width="2"/>
+        <text x="515" y="328" class="ui-label">CONSOLE</text>
+        <text x="515" y="352" class="ui-label">Ready. Ctrl + Enter runs.</text>
+      </svg>
+        <div class="callout green">Stages: <b>Create Your Explorer</b> · <b>Escape the Maze</b> · <b>Super Attack</b>.</div>
+      </div>
+      <div class="col">
+        <div class="card cyan"><h3>Empty editor</h3><p>You write every line. The game gives the mission, not the answer.</p></div>
+        <div class="card gold"><h3>Command strip</h3><p><code>move_one_step_up()</code>, <code>move_one_step_down()</code>, <code>move_one_step_left()</code>, <code>move_one_step_right()</code>, <code>coins</code> and <code>print(...)</code> stay visible above the editor. The Boss stage adds <code>fire_super_attack()</code>.</p></div>
+        <div class="card pink"><h3>Stuck? Use Hint</h3><p>The Hint button gives one idea at a time. It never types the program for you.</p></div>
+      </div>
+    </div>
+    <aside class="notes">Open the game and point to each region: arena, level dots, Hint button, command strip, empty editor and console. Emphasise that the editor starts empty on purpose; the command strip is the reference, not starter code. Show the stage tabs and explain that Create comes first, then the four maze levels, then the boss. Point out Ctrl + Enter and the Stop button.</aside>
+  </section>
+  <section class="slide" id="slide-22" aria-hidden="true">
+    <div class="kicker">Game · four levels</div>
+    <h2>The Maze – Four Levels, One Budget</h2>
+    <table class="table small">
+      <tr><th>#</th><th>Level</th><th>Start coins</th><th>What changes</th></tr>
+      <tr><td>1</td><td>First Steps</td><td>30</td><td>A five-step corridor. Walk right to the base.</td></tr>
+      <tr><td>2</td><td>Two Paths</td><td>35</td><td>Two routes. The chest is optional and pays +20.</td></tr>
+      <tr><td>3</td><td>Save Your Coins</td><td>22</td><td>The short route costs 26. You must pass the coin.</td></tr>
+      <tr><td>4</td><td>The Chest Detour</td><td>33</td><td>The shortest route runs out of coins. A dead-end chest pays for the long way. This final level tops you up to 50.</td></tr>
+    </table>
+    <div class="cols-2">
+      <div class="callout gold">Every move costs 1 coin. Gold coin +10, treasure chest +20. Reach the base before your coins hit zero.</div>
+      <div class="callout cyan">After level 4 the base tops you up to <b>50 coins</b>. On the Boss map, walk to the cyan attack pad above the boss. Then check <code>coins &gt;= 30</code> and fire with <code>fire_super_attack()</code>.</div>
+    </div>
+    <aside class="notes">Walk through the four levels as a difficulty story: enough coins to experiment, then two routes, then a budget that forces you onto the coin, then a final forced chest detour. Read the economy rules aloud. Explain the top-up to 50, and that the boss walk costs 20 coins so the robot reaches the pad with exactly 30. Mention that the boss replies "Super Attack Activated!" or "Not enough coins!". Do not reveal any route.</aside>
+  </section>
+  <section class="slide" id="slide-23" aria-hidden="true">
+    <div class="kicker">Review · last 5 minutes</div>
+    <h2>Lesson Review</h2>
+    <div class="cols-2">
+      <div class="steps">
+        <div class="step"><b>1</b><p>What does <code>range(3)</code> do?</p></div>
+        <div class="step"><b>2</b><p>What does <code>int()</code> change?</p></div>
+        <div class="step"><b>3</b><p>What is a parameter?</p></div>
+        <div class="step"><b>4</b><p>What does <code>coins &gt;= 30</code> ask?</p></div>
+        <div class="step"><b>5</b><p>What does <code>def</code> do?</p></div>
+      </div>
+      <div class="col">
+        <div class="card green">
+          <h3>Success criteria</h3>
+          <p>✓ <code>input()</code> and <code>int()</code></p>
+          <p>✓ a <code>for</code> loop with <code>range()</code></p>
+          <p>✓ <code>move_right(steps)</code> with a parameter</p>
+          <p>✓ <code>if</code> / <code>else</code> with 30 coins</p>
+        </div>
+        <div class="callout gold">The game was the practice. The Python ideas are the lesson.</div>
+      </div>
+    </div>
+    <aside class="notes">Use quick hands or whiteboards. Answers: range(3) repeats the indented body three times; int() turns number text into a number; a parameter is a named slot that receives an argument when the function is called; coins &gt;= 30 asks whether the player has at least thirty coins; def defines a function that can be called later. Tick the four success criteria on the board.</aside>
+  </section>
+  <section class="slide" id="slide-24" aria-hidden="true">
+    <div class="kicker">Exit ticket</div>
+    <h2>Exit Ticket</h2>
+    <div class="cols-3">
+      <div class="card cyan"><h3>1 · Loop</h3><p>Write a <code>for</code> loop that moves five steps.</p></div>
+      <div class="card gold"><h3>2 · Input</h3><p>Write the line that asks for a name and stores it.</p></div>
+      <div class="card pink"><h3>3 · Function</h3><p>In one sentence: why use a function instead of copying code?</p></div>
+    </div>
+    <div class="callout green">Answers in the presenter notes. Hand your ticket in at the door.</div>
+    <aside class="notes">Expected answers: for i in range(5): then an indented move_one_step_right(); player_name = input("What is your name? "); a function names a reusable block so we write it once, call it many times, and change a parameter instead of copying lines. Collect the tickets and sort them into ready or revisit before the next lesson.</aside>
+  </section>
+  <div id="notes-panel" aria-hidden="true">
+    <h3>Presenter notes</h3>
+    <div id="notes-body"></div>
+  </div>
+
+  <div id="help-overlay" aria-hidden="true">
+    <div class="help-box">
+      <h3>Slide controls</h3>
+      <div class="help-grid">
+        <div><b>→</b> / <b>Space</b> next slide</div>
+        <div><b>←</b> previous slide</div>
+        <div><b>Page Down</b> next slide</div>
+        <div><b>Page Up</b> previous slide</div>
+        <div><b>Home</b> / <b>End</b> first / last slide</div>
+        <div><b>F</b> full screen</div>
+        <div><b>N</b> presenter notes</div>
+        <div><b>B</b> blackout</div>
+        <div><b>?</b> this help</div>
+        <div><b>R</b> reset quizzes</div>
+        <div><b>Esc</b> close overlays</div>
+        <div>Click left / right side to move</div>
+        <div><b>#12</b> deep link to a slide</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="blackout" aria-hidden="true"></div>
+  <div id="toast" role="status"></div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var slides = Array.prototype.slice.call(document.querySelectorAll("#stage > .slide"));
+  var total = slides.length;
+  var index = 0;
+  var counter = document.getElementById("counter");
+  var fill = document.getElementById("progress-fill");
+  var notesPanel = document.getElementById("notes-panel");
+  var notesBody = document.getElementById("notes-body");
+  var help = document.getElementById("help-overlay");
+  var blackout = document.getElementById("blackout");
+  var stage = document.getElementById("stage");
+  var toast = document.getElementById("toast");
+  var notesOpen = false;
+  var toastTimer = null;
+
+  function parseHash() {
+    var h = (location.hash || "").replace(/^#/, "");
+    var m = h.match(/^(?:slide-)?(\d+)$/);
+    if (!m) return 0;
+    var n = parseInt(m[1], 10);
+    return n >= 1 && n <= total ? n - 1 : 0;
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("is-visible");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove("is-visible"); }, 1800);
+  }
+
+  function go(n, opts) {
+    opts = opts || {};
+    index = Math.max(0, Math.min(total - 1, n));
+    slides.forEach(function (s, i) {
+      var active = i === index;
+      s.classList.toggle("is-active", active);
+      s.setAttribute("aria-hidden", active ? "false" : "true");
+    });
+    counter.textContent = (index + 1) + " / " + total;
+    fill.style.width = ((index + 1) / total * 100) + "%";
+    var notes = slides[index].querySelector(".notes");
+    notesBody.textContent = notes ? notes.textContent.trim() : "";
+    if (opts.hash !== false) {
+      var h = "#" + (index + 1);
+      try { history.replaceState(null, "", h); }
+      catch (e) { location.hash = h; }
+    }
+  }
+
+  function next() { go(index + 1); }
+  function prev() { go(index - 1); }
+
+  function toggleNotes(force) {
+    notesOpen = typeof force === "boolean" ? force : !notesOpen;
+    notesPanel.classList.toggle("is-open", notesOpen);
+    notesPanel.setAttribute("aria-hidden", notesOpen ? "false" : "true");
+  }
+
+  function toggleHelp(force) {
+    var open = typeof force === "boolean" ? force : !help.classList.contains("is-open");
+    help.classList.toggle("is-open", open);
+    help.setAttribute("aria-hidden", open ? "false" : "true");
+  }
+
+  function toggleBlackout(force) {
+    var open = typeof force === "boolean" ? force : !blackout.classList.contains("is-open");
+    blackout.classList.toggle("is-open", open);
+  }
+
+  function resetQuiz(quiz) {
+    quiz.classList.remove("solved");
+    quiz.querySelectorAll(".q-opt").forEach(function (b) { b.classList.remove("correct", "wrong"); });
+    var feedback = quiz.querySelector(".q-feedback");
+    if (feedback) feedback.textContent = "";
+  }
+
+  function resetAllQuizzes() {
+    document.querySelectorAll(".quiz").forEach(resetQuiz);
+  }
+
+  function initQuizzes() {
+    document.querySelectorAll(".quiz").forEach(function (quiz) {
+      var answer = quiz.dataset.answer;
+      var feedback = quiz.querySelector(".q-feedback");
+      quiz.querySelectorAll(".q-opt").forEach(function (button) {
+        button.addEventListener("click", function () {
+          if (quiz.classList.contains("solved")) return;
+          if (button.dataset.opt === answer) {
+            button.classList.add("correct");
+            quiz.classList.add("solved");
+            if (feedback) feedback.textContent = "Correct!";
+          } else {
+            button.classList.add("wrong");
+            if (feedback) feedback.textContent = "Not quite — try again.";
+          }
+        });
+      });
+      var reset = quiz.querySelector(".q-reset");
+      if (reset) reset.addEventListener("click", function () { resetQuiz(quiz); });
+    });
+  }
+
+  function fullscreen() {
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (!req) { showToast("Press F11 for full screen"); return; }
+    var p = req.call(el);
+    if (p && p.catch) p.catch(function () { showToast("Press F11 for full screen"); });
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    var k = e.key;
+    var inQuiz = e.target && e.target.closest && e.target.closest(".quiz");
+    if (inQuiz && (k === " " || k === "Enter")) return;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); next(); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); prev(); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "f" || k === "F") { e.preventDefault(); fullscreen(); }
+    else if (k === "n" || k === "N") { e.preventDefault(); toggleNotes(); }
+    else if (k === "b" || k === "B") { e.preventDefault(); toggleBlackout(); }
+    else if (k === "?" || (k === "/" && e.shiftKey)) { e.preventDefault(); toggleHelp(); }
+    else if (k === "r" || k === "R") { e.preventDefault(); resetAllQuizzes(); }
+    else if (k === "Escape") { toggleHelp(false); toggleBlackout(false); toggleNotes(false); }
+  });
+
+  document.addEventListener("click", function (e) {
+    var id = e.target && e.target.id;
+    if (id === "help-overlay") { toggleHelp(false); return; }
+    if (id === "blackout") { toggleBlackout(false); return; }
+    if (e.target.closest && e.target.closest("#hud, #notes-panel, #help-overlay, #blackout")) return;
+    if (e.target.closest && e.target.closest(".quiz")) return;
+    var x = e.clientX / window.innerWidth;
+    if (x < 0.15) prev(); else next();
+  });
+
+  window.addEventListener("hashchange", function () {
+    var n = parseHash();
+    if (n !== index) go(n, { hash: false });
+  });
+
+  function scaleStage() {
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.transform = "scale(" + s + ")";
+  }
+  window.addEventListener("resize", scaleStage);
+
+  function highlight() {
+    var blocks = document.querySelectorAll("pre > code.python");
+    var re = /(#.*$)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|\b(for|in|if|else|def|range|print|input|int|True|False|and|or|not)\b|\b(\d+)\b|\b([A-Za-z_][A-Za-z0-9_]*)\(/gm;
+    blocks.forEach(function (code) {
+      if (code.dataset.highlighted) return;
+      var text = code.textContent;
+      var frag = document.createDocumentFragment();
+      var last = 0;
+      var m;
+      while ((m = re.exec(text)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        var cls = m[1] ? "tok-com" : m[2] ? "tok-str" : m[3] ? "tok-kw" : m[4] ? "tok-num" : "tok-fn";
+        var span = document.createElement("span");
+        span.className = cls;
+        span.textContent = m[0];
+        frag.appendChild(span);
+        last = m.index + m[0].length;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      code.textContent = "";
+      code.appendChild(frag);
+      code.dataset.highlighted = "1";
+    });
+  }
+
+  initQuizzes();
+  scaleStage();
+  highlight();
+  go(parseHash(), { hash: false });
+})();
+</script>
+</body>
+</html>
