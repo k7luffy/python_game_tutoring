@@ -60,22 +60,35 @@ python -m pip install -r game/requirements.txt
 
 ## Launch the game
 
-The easiest way is to double-click the launcher for your computer. The launcher creates
-the `.venv` and installs the packages on first use, then starts the game.
+The easiest way is to double-click the launcher for your computer. The launcher starts
+the game with a Python that already has pygame — the project `.venv` if it is working,
+otherwise any `py -3`, `python` or `python3` on the machine — and only creates `.venv`
+and installs the packages when no Python has pygame yet.
 
 - **macOS:** double-click `run_game.command`.
 - **Windows:** double-click `run_game.bat`.
 
-The Windows launcher accepts `py -3`, `python` or `python3`, rebuilds a `.venv` that was
-copied from another computer, and pauses on an error so the message stays on screen.
-The game declares per-monitor DPI awareness, so a Windows display scaled above 100%
-keeps a sharp window rather than a blurry one.
+Both launchers repair an environment that has lost pygame, rebuild a `.venv` copied from
+another computer, and pause on an error so the message stays on screen. The game declares
+per-monitor DPI awareness, so a Windows display scaled above 100% keeps a sharp window
+rather than a blurry one.
 
-Or run it from a terminal:
+Or run it from a terminal with the environment active:
 
 ```bash
+# macOS and Linux
+source .venv/bin/activate
 python game/main.py
 ```
+
+```bat
+rem Windows
+.venv\Scripts\activate
+python game\main.py
+```
+
+Starting `game/main.py` with a Python that does not have pygame prints a message that
+names that Python and points back to the launcher.
 
 The game opens in a resizable window at 1280 × 800. The drawing canvas is 1440 × 900 and
 scales to fit. The left side is the arena; the right side is the code editor. Every stage
@@ -211,9 +224,14 @@ python_Arena/
   open Command Prompt in the project folder and run `py -3 game\main.py` to read the message.
 - **The window or text is blurry on Windows** — the game asks SDL for per-monitor DPI
   awareness; use the latest files, and press **F11** for full screen on a scaled laptop screen.
-- **"No module named pygame"** — the virtual environment is not active. Activate it
-  (`.venv/bin/activate` on macOS/Linux, `.venv\Scripts\activate` on Windows), or use the
-  launcher, which installs the packages automatically.
+- **"No module named 'pygame'"** — the Python that started the game is not the one with
+  pygame, which is common on a laptop with more than one Python installed. Use the
+  launcher: `run_game.bat` finds a Python that already has pygame, or sets up `.venv` if
+  none has it. To see which Python has pygame, run
+  `py -3 -c "import pygame; print(pygame.version.ver)"`.
+- **"No module named pygame" inside an activated environment** — the environment is
+  missing the package. Run `python -m pip install -r game/requirements.txt` in it, or
+  delete `.venv` and let the launcher build it again.
 - **The window is too large or too small** — the game is resizable. Drag the window edge,
   or press **F11** for full screen. The canvas keeps its 16:9 shape.
 - **No sound in class** — click **Sound** to switch to **Muted**. The game is fully usable

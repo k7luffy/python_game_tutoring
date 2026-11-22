@@ -4,8 +4,10 @@ These checks pin the fixes that keep the game opening on a school laptop:
 
 * ``run_game.bat`` must use CRLF line endings.  With bare LF endings cmd.exe
   reports "The system cannot find the batch label specified" at ``goto``.
-* The batch file must find an interpreter whether the machine exposes ``py -3``,
-  ``python`` or ``python3``, and must not close its window on failure.
+* The batch file must use a Python that already has pygame (in the project
+  environment or on the system) before building a new one, must find an
+  interpreter whether the machine exposes ``py -3``, ``python`` or ``python3``,
+  and must not close its window on failure.
 * The game must set the Windows DPI hints before pygame starts, so display
   scaling does not blur or shrink the window, and must guard its console
   encoding so a legacy code page cannot stop it opening.
@@ -66,6 +68,44 @@ def test_windows_launcher_tries_each_interpreter_name():
     order = [text.index("py -3 -c"), text.index("python -c"), text.index("python3 -c")]
     assert order == sorted(order), "try py -3, then python, then python3"
     assert "sys.version_info >= (3, 10)" in text
+
+
+def test_windows_launcher_reuses_a_python_that_already_has_pygame():
+    """A machine with pygame installed must not need a new virtual environment."""
+    text = WIN_LAUNCHER.read_text(encoding="ascii")
+    venv_probe = text.index('"%PY%" -c "import pygame"')
+    system_probe = text.index('py -3 -c "import pygame"')
+    make_venv = text.index(":make_venv")
+    assert venv_probe < make_venv, "check the project environment before building one"
+    assert system_probe < make_venv, "check the installed Pythons before building one"
+    assert text.index("goto try_py") < system_probe
+    assert "%BASE% game\\main.py" in text, "the system Python must start the game"
+    assert "import pygame" in text[text.index(":have_python"):], (
+        "after installing, prove that pygame imports"
+    )
+
+
+def test_windows_launcher_repairs_a_broken_environment():
+    text = WIN_LAUNCHER.read_text(encoding="ascii")
+    assert ":repair" in text and ":rebuild" in text
+    repair = text.index(":repair")
+    rebuild = text.index(":rebuild")
+    assert repair < rebuild
+    assert 'rmdir /s /q ".venv"' in text[rebuild - 200:rebuild + 200]
+
+
+def test_windows_launcher_explains_a_failed_install():
+    text = WIN_LAUNCHER.read_text(encoding="ascii")
+    assert ":install_error" in text
+    assert 'sys.version.split()[0]' in text, "show the Python version that failed"
+    assert "Python 3.12 or 3.13" in text
+
+
+def test_entry_point_explains_a_missing_pygame():
+    text = GAME_MAIN.read_text(encoding="utf-8")
+    assert "except ModuleNotFoundError" in text
+    assert "run_game.bat" in text and "run_game.command" in text
+    assert "sys.executable" in text
 
 
 def test_macos_launcher_stays_lf_and_executable():

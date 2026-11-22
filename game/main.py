@@ -1,7 +1,9 @@
 """Python Maze Adventure - entry point and application shell.
 
-Run from the repository root with:
-    python game/main.py
+Run it with the project launcher (run_game.bat on Windows, run_game.command on
+macOS), or from the repository root with the environment's own interpreter:
+    .venv/bin/python game/main.py           (macOS and Linux)
+    .venv\\Scripts\\python game\\main.py     (Windows)
 """
 
 from __future__ import annotations
@@ -17,7 +19,16 @@ os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 os.environ.setdefault("SDL_WINDOWS_DPI_AWARENESS", "permonitorv2")
 os.environ.setdefault("SDL_WINDOWS_DPI_SCALING", "0")
 
-import pygame
+try:
+    import pygame
+except ModuleNotFoundError as exc:  # a bare "python game/main.py" on a new machine
+    if exc.name != "pygame":
+        raise
+    print("The game needs pygame, and this Python does not have it:")
+    print("    " + sys.executable)
+    print("Start the game with run_game.bat (Windows) or run_game.command (macOS),")
+    print("or activate the project environment and run it again.")
+    raise SystemExit(1)
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
