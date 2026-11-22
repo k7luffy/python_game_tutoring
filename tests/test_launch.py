@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import os
 import re
+
+import pytest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -108,6 +110,31 @@ def test_entry_point_explains_a_missing_pygame():
     assert "sys.executable" in text
 
 
+def test_entry_point_keeps_the_console_open_after_a_crash():
+    text = GAME_MAIN.read_text(encoding="utf-8")
+    assert "def _pause_for_windows" in text
+    assert 'os.name != "nt"' in text
+    assert "Press Enter to close this window." in text
+    assert "traceback.print_exc()" in text
+    assert "except KeyboardInterrupt:" in text
+
+
+def test_main_reports_an_unexpected_crash(monkeypatch, capsys):
+    import main as entry
+
+    class BoomApp:
+        def run(self) -> None:
+            raise RuntimeError("boom")
+
+    monkeypatch.setattr(entry, "App", BoomApp)
+    with pytest.raises(SystemExit) as info:
+        entry.main()
+    assert info.value.code == 1
+    out = capsys.readouterr()
+    assert "unexpected error" in out.out
+    assert "RuntimeError" in out.err
+
+
 def test_macos_launcher_stays_lf_and_executable():
     assert MAC_LAUNCHER.is_file()
     assert os.access(MAC_LAUNCHER, os.X_OK), "run_game.command is not executable"
@@ -132,7 +159,10 @@ def test_entry_point_guards_the_console_encoding():
     text = GAME_MAIN.read_text(encoding="utf-8")
     assert '_ensure_utf8_console' in text
     assert 'reconfigure(encoding="utf-8", errors="replace")' in text
-    assert "def main() -> None:\n    _ensure_utf8_console()\n    App().run()" in text
+    assert (
+        "def main() -> None:\n    _ensure_utf8_console()\n    try:\n        App().run()"
+        in text
+    )
 
 
 def test_entry_point_imports_cleanly_with_dummy_video():

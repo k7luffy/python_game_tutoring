@@ -216,6 +216,12 @@ python_Arena/
 
 ## Troubleshooting
 
+- **A window flashes and closes before you can read an error** — a console that Python
+  opens by itself closes the moment the script ends, so the message goes with it. Start
+  the game with `run_game.bat` (Windows) or `run_game.command` (macOS), which keep the
+  window open. A syntax error in a file is reported before Python runs any of it, so only
+  the launcher can hold that message on screen. When the running game hits an unexpected
+  error, `main.py` prints the traceback and, on Windows, waits for Enter.
 - **"python: command not found"** — install Python 3.10 or newer from python.org, then
   create the virtual environment again. On Windows the command may be `py -3`.
 - **The Windows window flashes and closes, or cmd says "The system cannot find the batch

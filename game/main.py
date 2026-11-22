@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import sys
 import time
+import traceback
 
 # Keep the window sharp when Windows display scaling is above 100%, and hide
 # pygame's support banner.  SDL ignores both hints on macOS and Linux, so they
@@ -678,9 +679,43 @@ def _ensure_utf8_console() -> None:
             pass
 
 
+def _pause_for_windows() -> None:
+    """Keep a console window open long enough to read an error.
+
+    Windows closes a console that a script opened itself as soon as the
+    script exits, so a crash would flash past.  Only pause where a person
+    is watching a console: never in tests or a redirected session.
+    """
+    if os.name != "nt":
+        return
+    try:
+        if not sys.stdin or not sys.stdin.isatty():
+            return
+    except (AttributeError, ValueError):
+        return
+    try:
+        input("\nPress Enter to close this window.")
+    except (EOFError, OSError, ValueError):
+        pass
+
+
+def _report_crash() -> None:
+    print()
+    print("The game stopped because of an unexpected error.")
+    print("The details below help fix it:")
+    traceback.print_exc()
+    _pause_for_windows()
+
+
 def main() -> None:
     _ensure_utf8_console()
-    App().run()
+    try:
+        App().run()
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        _report_crash()
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

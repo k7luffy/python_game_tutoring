@@ -157,6 +157,21 @@ def test_level_dot_click_switches_level(app):
     assert app.stage == C.STAGE_MAZE
 
 
+def test_syntax_error_shows_a_card_and_the_game_keeps_running(app):
+    app.switch_stage(2, force=True)
+    app.doc.set_text("for i in range(3)\nmove_one_step_right()\n")
+    app.handle_action("run")
+    app.update(0.2)
+    assert isinstance(app.modal, NoticeModal)
+    assert app.modal.notice.kind == "error"
+    assert "Syntax" in app.modal.notice.title
+    app.modal_action("close")
+    app.doc.set_text("move_one_step_right()\n")
+    app.handle_action("run")
+    drive(app, timeout=10.0)
+    assert app.session.steps == 1, "the game must keep running after a syntax error"
+
+
 def test_help_modal_opens_and_closes(app):
     app.handle_action("help")
     assert app.modal is not None and app.modal.__class__.__name__ == "HelpModal"
